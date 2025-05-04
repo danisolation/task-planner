@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Clock,
   Edit,
@@ -17,29 +17,52 @@ import {
   ChevronRight,
   ChevronDown,
   Layers,
-} from "lucide-react"
-import { format } from "date-fns"
-import { vi } from "date-fns/locale"
-import type { Task } from "@/lib/types"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Progress } from "@/components/ui/progress"
+  CalendarIcon,
+  AlertTriangle,
+} from "lucide-react";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import type { Task } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 
 interface TaskListProps {
-  tasks: Task[]
-  onEdit: (task: Task) => void
-  onDelete: (id: string) => void
-  onStatusChange: (task: Task) => void
-  onDuplicate: (task: Task) => void
-  onReminder: (task: Task) => void
-  onShare: (task: Task) => void
-  onSubtaskToggle: (taskId: string, subtaskId: string, completed: boolean) => void
+  tasks: Task[];
+  onEdit: (task: Task) => void;
+  onDelete: (id: string) => void;
+  onStatusChange: (task: Task) => void;
+  onDuplicate: (task: Task) => void;
+  onReminder: (task: Task) => void;
+  onShare: (task: Task) => void;
+  onSubtaskToggle: (
+    taskId: string,
+    subtaskId: string,
+    completed: boolean
+  ) => void;
 }
 
 export function TaskList({
@@ -52,81 +75,102 @@ export function TaskList({
   onShare,
   onSubtaskToggle,
 }: TaskListProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [tagFilter, setTagFilter] = useState<string | null>(null)
-  const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>({})
+  const [searchTerm, setSearchTerm] = useState("");
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [subtaskView, setSubtaskView] = useState<"compact" | "detailed">(
+    "compact"
+  );
 
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (task.tags && task.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())))
+      (task.tags &&
+        task.tags.some((tag) =>
+          tag.toLowerCase().includes(searchTerm.toLowerCase())
+        ));
 
-    const matchesTag = !tagFilter || (task.tags && task.tags.includes(tagFilter))
+    const matchesTag =
+      !tagFilter || (task.tags && task.tags.includes(tagFilter));
 
-    return matchesSearch && matchesTag
-  })
+    return matchesSearch && matchesTag;
+  });
 
   const sortedTasks = [...filteredTasks].sort((a, b) => {
     // Sort by status (incomplete first)
     if (a.status !== b.status) {
-      return a.status === "incomplete" ? -1 : 1
+      return a.status === "incomplete" ? -1 : 1;
     }
 
     // Then sort by due date (earliest first)
-    const dateA = new Date(a.dueDate).getTime()
-    const dateB = new Date(b.dueDate).getTime()
-    return dateA - dateB
-  })
+    const dateA = new Date(a.dueDate).getTime();
+    const dateB = new Date(b.dueDate).getTime();
+    return dateA - dateB;
+  });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
       case "incomplete":
-        return <Circle className="h-5 w-5 text-slate-400" />
+        return <Circle className="h-5 w-5 text-slate-400" />;
       case "overdue":
-        return <AlertCircle className="h-5 w-5 text-red-500" />
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
       default:
-        return <Circle className="h-5 w-5 text-slate-400" />
+        return <Circle className="h-5 w-5 text-slate-400" />;
     }
-  }
+  };
 
   const toggleTaskStatus = (task: Task) => {
-    const newStatus = task.status === "completed" ? "incomplete" : "completed"
-    onStatusChange({ ...task, status: newStatus })
-  }
+    const newStatus = task.status === "completed" ? "incomplete" : "completed";
+    onStatusChange({ ...task, status: newStatus });
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "cao":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
       case "trung bình":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
       case "thấp":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       default:
-        return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
+        return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300";
     }
-  }
+  };
 
   // Extract all unique tags from tasks
-  const allTags = Array.from(new Set(tasks.flatMap((task) => task.tags || [])))
+  const allTags = Array.from(new Set(tasks.flatMap((task) => task.tags || [])));
 
   // Toggle task expansion
   const toggleTaskExpansion = (taskId: string) => {
     setExpandedTasks((prev) => ({
       ...prev,
       [taskId]: !prev[taskId],
-    }))
-  }
+    }));
+  };
 
   // Calculate subtask progress
   const calculateSubtaskProgress = (task: Task) => {
-    if (!task.subTasks || task.subTasks.length === 0) return 0
-    const completedSubtasks = task.subTasks.filter((subtask) => subtask.completed).length
-    return Math.round((completedSubtasks / task.subTasks.length) * 100)
-  }
+    if (!task.subTasks || task.subTasks.length === 0) return 0;
+    const completedSubtasks = task.subTasks.filter(
+      (subtask) => subtask.completed
+    ).length;
+    return Math.round((completedSubtasks / task.subTasks.length) * 100);
+  };
+
+  // Check if subtask is overdue
+  const isSubtaskOverdue = (subtask: any) => {
+    if (!subtask.dueDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(subtask.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return !subtask.completed && dueDate < today;
+  };
 
   return (
     <div className="space-y-4">
@@ -140,27 +184,41 @@ export function TaskList({
           />
         </div>
 
-        {allTags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            <Badge
-              variant={tagFilter === null ? "default" : "outline"}
-              className="cursor-pointer"
-              onClick={() => setTagFilter(null)}
-            >
-              Tất cả
-            </Badge>
-            {allTags.map((tag) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setSubtaskView(subtaskView === "compact" ? "detailed" : "compact")
+            }
+          >
+            {subtaskView === "compact"
+              ? "Hiển thị chi tiết"
+              : "Hiển thị thu gọn"}
+          </Button>
+
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
               <Badge
-                key={tag}
-                variant={tagFilter === tag ? "default" : "outline"}
+                variant={tagFilter === null ? "default" : "outline"}
                 className="cursor-pointer"
-                onClick={() => setTagFilter(tag)}
+                onClick={() => setTagFilter(null)}
               >
-                {tag}
+                Tất cả
               </Badge>
-            ))}
-          </div>
-        )}
+              {allTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant={tagFilter === tag ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => setTagFilter(tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {sortedTasks.length === 0 ? (
@@ -189,19 +247,27 @@ export function TaskList({
                   <TableRow
                     key={task.id}
                     className={cn(
-                      task.status === "completed" && "bg-slate-50 dark:bg-slate-900/30",
-                      task.status === "overdue" && "bg-red-50 dark:bg-red-900/10",
+                      task.status === "completed" &&
+                        "bg-slate-50 dark:bg-slate-900/30",
+                      task.status === "overdue" &&
+                        "bg-red-50 dark:bg-red-900/10"
                     )}
                   >
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => toggleTaskStatus(task)} className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleTaskStatus(task)}
+                        className="h-8 w-8"
+                      >
                         {getStatusIcon(task.status)}
                       </Button>
                     </TableCell>
                     <TableCell
                       className={cn(
                         "font-medium",
-                        task.status === "completed" && "line-through text-slate-500 dark:text-slate-400",
+                        task.status === "completed" &&
+                          "line-through text-slate-500 dark:text-slate-400"
                       )}
                     >
                       <div>
@@ -230,7 +296,9 @@ export function TaskList({
                                   <Repeat className="h-4 w-4 text-blue-500" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>Kế hoạch lặp lại {task.recurringPattern}</p>
+                                  <p>
+                                    Kế hoạch lặp lại {task.recurringPattern}
+                                  </p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -247,10 +315,10 @@ export function TaskList({
                                     {task.reminder.unit === "minutes"
                                       ? "phút"
                                       : task.reminder.unit === "hours"
-                                        ? "giờ"
-                                        : task.reminder.unit === "days"
-                                          ? "ngày"
-                                          : "tuần"}{" "}
+                                      ? "giờ"
+                                      : task.reminder.unit === "days"
+                                      ? "ngày"
+                                      : "tuần"}{" "}
                                     trước khi đến hạn
                                   </p>
                                 </TooltipContent>
@@ -259,16 +327,25 @@ export function TaskList({
                           )}
                         </div>
                         <p className="text-sm text-slate-500 dark:text-slate-400 md:hidden mt-1 line-clamp-1">
-                          {format(new Date(task.dueDate), "dd/MM/yyyy", { locale: vi })}
+                          {format(new Date(task.dueDate), "dd/MM/yyyy", {
+                            locale: vi,
+                          })}
                         </p>
 
                         {task.subTasks && task.subTasks.length > 0 && (
                           <div className="flex items-center gap-2 mt-1">
                             <Layers className="h-3 w-3 text-slate-400" />
                             <span className="text-xs text-slate-500">
-                              {task.subTasks.filter((st) => st.completed).length}/{task.subTasks.length} công việc con
+                              {
+                                task.subTasks.filter((st) => st.completed)
+                                  .length
+                              }
+                              /{task.subTasks.length} công việc con
                             </span>
-                            <Progress value={calculateSubtaskProgress(task)} className="h-1 flex-1" />
+                            <Progress
+                              value={calculateSubtaskProgress(task)}
+                              className="h-1 flex-1"
+                            />
                           </div>
                         )}
                       </div>
@@ -277,19 +354,27 @@ export function TaskList({
                       <Badge variant="outline">{task.category}</Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
+                      <Badge className={getPriorityColor(task.priority)}>
+                        {task.priority}
+                      </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-slate-500" />
-                        {format(new Date(task.dueDate), "dd/MM/yyyy", { locale: vi })}
+                        {format(new Date(task.dueDate), "dd/MM/yyyy", {
+                          locale: vi,
+                        })}
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {task.tags &&
                           task.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="flex items-center gap-1"
+                            >
                               <Tag className="h-3 w-3" />
                               {tag}
                             </Badge>
@@ -299,7 +384,11 @@ export function TaskList({
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreVertical className="h-4 w-4" />
                             <span className="sr-only">Mở menu</span>
                           </Button>
@@ -334,29 +423,168 @@ export function TaskList({
                   </TableRow>
 
                   {/* Subtasks */}
-                  {task.subTasks && task.subTasks.length > 0 && expandedTasks[task.id] && (
-                    <>
-                      {task.subTasks.map((subtask) => (
-                        <TableRow key={`${task.id}-${subtask.id}`} className="bg-muted/30 border-t-0">
-                          <TableCell></TableCell>
-                          <TableCell colSpan={5}>
-                            <div className="flex items-center gap-2 pl-7">
-                              <Checkbox
-                                checked={subtask.completed}
-                                onCheckedChange={(checked) => onSubtaskToggle(task.id, subtask.id, !!checked)}
-                              />
-                              <span
-                                className={cn("text-sm", subtask.completed && "line-through text-muted-foreground")}
-                              >
-                                {subtask.title}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell></TableCell>
-                        </TableRow>
-                      ))}
-                    </>
-                  )}
+                  {task.subTasks &&
+                    task.subTasks.length > 0 &&
+                    expandedTasks[task.id] && (
+                      <>
+                        {task.subTasks.map((subtask) => (
+                          <TableRow
+                            key={`${task.id}-${subtask.id}`}
+                            className="bg-muted/30 border-t-0"
+                          >
+                            <TableCell></TableCell>
+                            <TableCell
+                              colSpan={subtaskView === "detailed" ? 1 : 5}
+                            >
+                              <div className="flex items-center gap-2 pl-7">
+                                <Checkbox
+                                  checked={subtask.completed}
+                                  onCheckedChange={(checked) =>
+                                    onSubtaskToggle(
+                                      task.id,
+                                      subtask.id,
+                                      !!checked
+                                    )
+                                  }
+                                />
+                                <span
+                                  className={cn(
+                                    "text-sm",
+                                    subtask.completed &&
+                                      "line-through text-muted-foreground"
+                                  )}
+                                >
+                                  {subtask.title}
+                                </span>
+
+                                {/* Hiển thị thông tin chi tiết của subtask */}
+                                {subtask.dueDate && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <div className="flex items-center">
+                                          <CalendarIcon
+                                            className={cn(
+                                              "h-4 w-4 ml-2",
+                                              isSubtaskOverdue(subtask)
+                                                ? "text-red-500"
+                                                : "text-slate-400"
+                                            )}
+                                          />
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          Hạn chót:{" "}
+                                          {format(
+                                            new Date(subtask.dueDate),
+                                            "dd/MM/yyyy",
+                                            { locale: vi }
+                                          )}
+                                        </p>
+                                        {isSubtaskOverdue(subtask) && (
+                                          <p className="text-red-500 flex items-center gap-1">
+                                            <AlertTriangle className="h-3 w-3" />{" "}
+                                            Đã quá hạn
+                                          </p>
+                                        )}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+
+                                {subtask.priority && (
+                                  <Badge
+                                    className={cn(
+                                      "text-xs",
+                                      subtask.priority === "cao"
+                                        ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                                        : subtask.priority === "trung bình"
+                                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                        : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                    )}
+                                  >
+                                    {subtask.priority}
+                                  </Badge>
+                                )}
+
+                                {subtask.timeEstimate && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <Clock className="h-4 w-4 text-slate-400" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          Ước tính: {subtask.timeEstimate} phút
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                              </div>
+
+                              {(subtask.description ||
+                                subtaskView === "detailed") && (
+                                <div className="pl-12 pr-4 mt-1 text-xs text-muted-foreground">
+                                  {subtask.description || "Không có mô tả"}
+                                </div>
+                              )}
+                            </TableCell>
+                            {subtaskView === "detailed" && (
+                              <>
+                                <TableCell className="hidden md:table-cell">
+                                  {subtask.priority && (
+                                    <Badge
+                                      className={cn(
+                                        "text-xs",
+                                        subtask.priority === "cao"
+                                          ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                                          : subtask.priority === "trung bình"
+                                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                          : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                      )}
+                                    >
+                                      {subtask.priority}
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  {subtask.dueDate && (
+                                    <div
+                                      className={cn(
+                                        "flex items-center gap-1",
+                                        isSubtaskOverdue(subtask) &&
+                                          "text-red-500"
+                                      )}
+                                    >
+                                      <Clock className="h-4 w-4" />
+                                      {format(
+                                        new Date(subtask.dueDate),
+                                        "dd/MM/yyyy",
+                                        { locale: vi }
+                                      )}
+                                      {isSubtaskOverdue(subtask) && (
+                                        <AlertTriangle className="h-4 w-4" />
+                                      )}
+                                    </div>
+                                  )}
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  {subtask.timeEstimate && (
+                                    <div className="flex items-center gap-1 text-sm">
+                                      <Clock className="h-4 w-4" />
+                                      {subtask.timeEstimate} phút
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </>
+                            )}
+                            <TableCell></TableCell>
+                          </TableRow>
+                        ))}
+                      </>
+                    )}
                 </>
               ))}
             </TableBody>
@@ -364,5 +592,5 @@ export function TaskList({
         </div>
       )}
     </div>
-  )
+  );
 }
