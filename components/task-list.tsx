@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import type { Task } from "@/lib/types";
+import type { Task, SubTask } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -163,7 +163,7 @@ export function TaskList({
   };
 
   // Check if subtask is overdue
-  const isSubtaskOverdue = (subtask: any) => {
+  const isSubtaskOverdue = (subtask: SubTask) => {
     if (!subtask.dueDate) return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);

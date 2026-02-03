@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Bell, BellOff, Volume2, Volume1, VolumeX, BellRing } from "lucide-react"
-import type { Task } from "@/lib/types"
+import type { Task, TaskReminderSettings } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -18,7 +18,7 @@ interface TaskReminderProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   task: Task | null
-  onSave: (taskId: string, reminderSettings: any) => void
+  onSave: (taskId: string, reminderSettings: TaskReminderSettings) => void
 }
 
 export function TaskReminder({ open, onOpenChange, task, onSave }: TaskReminderProps) {

@@ -1,3 +1,15 @@
+export interface TaskReminderSettings {
+  enabled: boolean;
+  time?: number;
+  unit?: string;
+  repeat?: string;
+  repeatInterval?: number;
+  notificationType?: string;
+  soundVolume?: number;
+  sound?: string;
+  notified?: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -19,17 +31,7 @@ export interface Task {
     endCount: number;
   };
   notes?: string;
-  reminder?: {
-    enabled: boolean;
-    time: number;
-    unit: string;
-    repeat?: string;
-    repeatInterval?: number;
-    notificationType?: string;
-    soundVolume?: number;
-    sound?: string;
-    notified?: boolean;
-  };
+  reminder?: TaskReminderSettings;
   importance?: number;
   subTasks?: SubTask[];
   timeEstimate?: TimeEstimate;

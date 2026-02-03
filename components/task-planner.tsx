@@ -1,7 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { PlusCircle, Calendar, ListTodo, LayoutGrid, BarChart3, Clock, Sun, Moon, Download, Kanban } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
+import {
+  PlusCircle,
+  Calendar,
+  ListTodo,
+  LayoutGrid,
+  BarChart3,
+  Clock,
+  Sun,
+  Moon,
+  Download,
+  Kanban,
+  AlertTriangle,
+  CheckCircle2,
+  ListFilter,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TaskList } from "./task-list"
@@ -12,13 +26,25 @@ import { TaskAnalytics } from "./task-analytics"
 import { PomodoroTimer } from "./pomodoro-timer"
 import { TaskImportExport } from "./task-import-export"
 import { useTheme } from "next-themes"
-import type { Task } from "@/lib/types"
+import type { Task, TaskReminderSettings } from "@/lib/types"
 import { TaskReminder } from "./task-reminder"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { TaskShare } from "./task-share"
 import { TaskKanban } from "./task-kanban"
+import { Badge } from "@/components/ui/badge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function TaskPlanner() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -28,6 +54,7 @@ export default function TaskPlanner() {
   const [activeTab, setActiveTab] = useState("list")
   const [isTimerOpen, setIsTimerOpen] = useState(false)
   const [isExportOpen, setIsExportOpen] = useState(false)
+  const [taskFilter, setTaskFilter] = useState<"all" | "today" | "week" | "overdue">("all")
   const { theme, setTheme } = useTheme()
 
   // State cho dialog nhắc nhở
@@ -69,7 +96,7 @@ export default function TaskPlanner() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    const updatedTasks = tasks.map((task) => {
+    const updatedTasks: Task[] = tasks.map((task) => {
       const dueDate = new Date(task.dueDate)
       dueDate.setHours(0, 0, 0, 0)
 
@@ -90,7 +117,7 @@ export default function TaskPlanner() {
       const now = new Date()
 
       tasks.forEach((task) => {
-        if (task.reminder?.enabled && task.status !== "completed") {
+        if (task.reminder?.enabled && task.reminder.time && task.reminder.unit && task.status !== "completed") {
           const dueDate = new Date(task.dueDate)
           const reminderTime = new Date(dueDate)
 
@@ -145,18 +172,20 @@ export default function TaskPlanner() {
     checkReminders()
 
     return () => clearInterval(interval)
-  }, [tasks])
+  }, [tasks, toast])
 
   const addTask = (task: Task) => {
-    setTasks([...tasks, task])
+    setTasks((previousTasks) => [...previousTasks, task])
   }
 
-  const updateTask = (updatedTask: Task) => {
-    setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)))
-  }
+  const updateTask = useCallback((updatedTask: Task) => {
+    setTasks((previousTasks) =>
+      previousTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+    )
+  }, [])
 
   const deleteTask = (id: string) => {
-    setTasks(tasks.filter((task) => task.id !== id))
+    setTasks((previousTasks) => previousTasks.filter((task) => task.id !== id))
   }
 
   const openNewTaskDialog = () => {
@@ -174,7 +203,7 @@ export default function TaskPlanner() {
   }
 
   const duplicateTask = (task: Task) => {
-    const newTask = {
+    const newTask: Task = {
       ...task,
       id: crypto.randomUUID(),
       title: `${task.title} (Bản sao)`,
@@ -196,7 +225,7 @@ export default function TaskPlanner() {
   }
 
   // Lưu cài đặt nhắc nhở
-  const saveReminderSettings = (taskId: string, reminderSettings: any) => {
+  const saveReminderSettings = (taskId: string, reminderSettings: TaskReminderSettings) => {
     setTasks(
       tasks.map((task) =>
         task.id === taskId ? { ...task, reminder: reminderSettings.enabled ? reminderSettings : undefined } : task,
@@ -227,30 +256,182 @@ export default function TaskPlanner() {
     )
   }
 
+  const clearCompletedTasks = () => {
+    setTasks((previousTasks) =>
+      previousTasks.filter((task) => task.status !== "completed"),
+    )
+  }
+
+  const today = new Date()
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
+
+  const startOfWeekDate = new Date(today)
+  startOfWeekDate.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+  startOfWeekDate.setHours(0, 0, 0, 0)
+
+  const endOfWeekDate = new Date(startOfWeekDate)
+  endOfWeekDate.setDate(startOfWeekDate.getDate() + 6)
+  endOfWeekDate.setHours(23, 59, 59, 999)
+
+  const filteredTasks = tasks.filter((task) => {
+    if (taskFilter === "all") {
+      return true
+    }
+
+    const dueDate = new Date(task.dueDate)
+
+    if (taskFilter === "today") {
+      return dueDate >= startOfToday && dueDate <= endOfToday
+    }
+
+    if (taskFilter === "week") {
+      return dueDate >= startOfWeekDate && dueDate <= endOfWeekDate
+    }
+
+    if (taskFilter === "overdue") {
+      return task.status === "overdue"
+    }
+
+    return true
+  })
+
+  const totalTasks = tasks.length
+  const completedTasks = tasks.filter((task) => task.status === "completed").length
+  const overdueTasks = tasks.filter((task) => task.status === "overdue").length
+  const activeTasks = tasks.filter((task) => task.status !== "completed").length
+
   return (
     <div className="container mx-auto p-4 max-w-5xl">
       <header className="py-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Kế hoạch của tôi</h1>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleTheme}
-              title={theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <Button variant="outline" size="icon" onClick={() => setIsTimerOpen(true)} title="Pomodoro Timer">
-              <Clock className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={() => setIsExportOpen(true)} title="Xuất/Nhập dữ liệu">
-              <Download className="h-4 w-4" />
-            </Button>
-            <Button onClick={openNewTaskDialog} className="gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Thêm kế hoạch
-            </Button>
+        <div className="flex flex-col gap-4 mb-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Kế hoạch của tôi</h1>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Quản lý công việc, theo dõi tiến độ và tập trung với Pomodoro.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleTheme}
+                title={theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => setIsTimerOpen(true)} title="Pomodoro Timer">
+                <Clock className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => setIsExportOpen(true)} title="Xuất/Nhập dữ liệu">
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button onClick={openNewTaskDialog} className="gap-2">
+                <PlusCircle className="h-4 w-4" />
+                Thêm kế hoạch
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="flex items-center justify-between rounded-lg border bg-card px-3 py-2">
+              <div>
+                <p className="text-xs text-muted-foreground">Tổng kế hoạch</p>
+                <p className="text-lg font-semibold">{totalTasks}</p>
+              </div>
+              <ListTodo className="h-5 w-5 text-slate-400" />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border bg-card px-3 py-2">
+              <div>
+                <p className="text-xs text-muted-foreground">Đang thực hiện</p>
+                <p className="text-lg font-semibold">{activeTasks}</p>
+              </div>
+              <Clock className="h-5 w-5 text-blue-500" />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border bg-card px-3 py-2">
+              <div>
+                <p className="text-xs text-muted-foreground">Đã hoàn thành</p>
+                <p className="text-lg font-semibold">{completedTasks}</p>
+              </div>
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border bg-card px-3 py-2">
+              <div>
+                <p className="text-xs text-muted-foreground">Quá hạn</p>
+                <p className="text-lg font-semibold">{overdueTasks}</p>
+              </div>
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
+            <div className="flex flex-wrap gap-2 items-center">
+              <Badge
+                variant={taskFilter === "all" ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => setTaskFilter("all")}
+              >
+                Tất cả
+              </Badge>
+              <Badge
+                variant={taskFilter === "today" ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => setTaskFilter("today")}
+              >
+                Hôm nay
+              </Badge>
+              <Badge
+                variant={taskFilter === "week" ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => setTaskFilter("week")}
+              >
+                Tuần này
+              </Badge>
+              <Badge
+                variant={taskFilter === "overdue" ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => setTaskFilter("overdue")}
+              >
+                Quá hạn
+              </Badge>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <ListFilter className="h-3 w-3" />
+                <span>
+                  Đang lọc:{" "}
+                  {taskFilter === "all"
+                    ? "Tất cả kế hoạch"
+                    : taskFilter === "today"
+                    ? "Kế hoạch hôm nay"
+                    : taskFilter === "week"
+                    ? "Kế hoạch trong tuần"
+                    : "Kế hoạch quá hạn"}
+                </span>
+              </div>
+            </div>
+
+            {completedTasks > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Xóa kế hoạch đã hoàn thành
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Xóa tất cả kế hoạch đã hoàn thành?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Thao tác này sẽ xóa {completedTasks} kế hoạch đã hoàn thành khỏi danh sách. Bạn không thể hoàn
+                      tác sau khi xóa.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Hủy</AlertDialogCancel>
+                    <AlertDialogAction onClick={clearCompletedTasks}>Xóa</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </div>
       </header>
@@ -281,7 +462,7 @@ export default function TaskPlanner() {
 
         <TabsContent value="list" className="mt-0">
           <TaskList
-            tasks={tasks}
+            tasks={filteredTasks}
             onEdit={openEditTaskDialog}
             onDelete={deleteTask}
             onStatusChange={updateTask}
@@ -294,7 +475,7 @@ export default function TaskPlanner() {
 
         <TabsContent value="kanban" className="mt-0">
           <TaskKanban
-            tasks={tasks}
+            tasks={filteredTasks}
             onEdit={openEditTaskDialog}
             onDelete={deleteTask}
             onStatusChange={updateTask}
@@ -305,12 +486,12 @@ export default function TaskPlanner() {
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-0">
-          <TaskCalendar tasks={tasks} onEdit={openEditTaskDialog} />
+          <TaskCalendar tasks={filteredTasks} onEdit={openEditTaskDialog} />
         </TabsContent>
 
         <TabsContent value="grid" className="mt-0">
           <TaskGrid
-            tasks={tasks}
+            tasks={filteredTasks}
             onEdit={openEditTaskDialog}
             onDelete={deleteTask}
             onStatusChange={updateTask}
