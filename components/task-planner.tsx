@@ -15,6 +15,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   ListFilter,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Zap,
+  Command,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -45,6 +50,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function TaskPlanner() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -67,6 +78,45 @@ export default function TaskPlanner() {
 
   // Hook toast
   const { toast } = useToast()
+
+  // Get greeting based on time
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return "Chào buổi sáng"
+    if (hour < 18) return "Chào buổi chiều"
+    return "Chào buổi tối"
+  }
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + N: New task
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault()
+        openNewTaskDialog()
+      }
+      // Ctrl/Cmd + P: Pomodoro
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault()
+        setIsTimerOpen(true)
+      }
+      // Ctrl/Cmd + E: Export
+      if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault()
+        setIsExportOpen(true)
+      }
+      // 1-5: Switch tabs
+      if (e.key >= '1' && e.key <= '5' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const target = e.target as HTMLElement
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+          const tabs = ['list', 'kanban', 'calendar', 'grid', 'analytics']
+          setActiveTab(tabs[parseInt(e.key) - 1])
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Load tasks from localStorage on component mount
   useEffect(() => {
@@ -300,124 +350,190 @@ export default function TaskPlanner() {
   const completedTasks = tasks.filter((task) => task.status === "completed").length
   const overdueTasks = tasks.filter((task) => task.status === "overdue").length
   const activeTasks = tasks.filter((task) => task.status !== "completed").length
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
   return (
-    <div className="container mx-auto p-4 max-w-5xl">
-      <header className="py-6">
-        <div className="flex flex-col gap-4 mb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Kế hoạch của tôi</h1>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Quản lý công việc, theo dõi tiến độ và tập trung với Pomodoro.
+    <div className="container mx-auto px-4 py-6 max-w-6xl custom-scrollbar">
+      {/* Header Section */}
+      <header className="mb-8 animate-fade-in">
+        <div className="flex flex-col gap-6">
+          {/* Top bar with greeting and actions */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500 animate-pulse-soft" />
+                <span className="text-sm font-medium text-muted-foreground">{getGreeting()}!</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                <span className="gradient-text">Kế hoạch của tôi</span>
+              </h1>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Quản lý công việc thông minh, theo dõi tiến độ và tập trung với Pomodoro.
               </p>
             </div>
+            
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleTheme}
-                title={theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
-              >
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => setIsTimerOpen(true)} title="Pomodoro Timer">
-                <Clock className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => setIsExportOpen(true)} title="Xuất/Nhập dữ liệu">
-                <Download className="h-4 w-4" />
-              </Button>
-              <Button onClick={openNewTaskDialog} className="gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={toggleTheme}
+                      className="rounded-full hover-lift"
+                    >
+                      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => setIsTimerOpen(true)} 
+                      className="rounded-full hover-lift"
+                    >
+                      <Clock className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Pomodoro Timer <kbd className="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded">Ctrl+P</kbd></p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => setIsExportOpen(true)} 
+                      className="rounded-full hover-lift"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Xuất/Nhập dữ liệu <kbd className="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded">Ctrl+E</kbd></p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <Button onClick={openNewTaskDialog} className="gap-2 rounded-full hover-lift shadow-lg shadow-primary/25">
                 <PlusCircle className="h-4 w-4" />
-                Thêm kế hoạch
+                <span className="hidden sm:inline">Thêm kế hoạch</span>
+                <span className="sm:hidden">Thêm</span>
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div className="flex items-center justify-between rounded-lg border bg-card px-3 py-2">
-              <div>
-                <p className="text-xs text-muted-foreground">Tổng kế hoạch</p>
-                <p className="text-lg font-semibold">{totalTasks}</p>
+          {/* Stats cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-slide-up">
+            <div className="group glass-card rounded-xl p-4 hover-lift cursor-default">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Tổng kế hoạch</p>
+                  <p className="text-2xl font-bold mt-1">{totalTasks}</p>
+                </div>
+                <div className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:scale-110 transition-transform">
+                  <Target className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+                </div>
               </div>
-              <ListTodo className="h-5 w-5 text-slate-400" />
             </div>
-            <div className="flex items-center justify-between rounded-lg border bg-card px-3 py-2">
-              <div>
-                <p className="text-xs text-muted-foreground">Đang thực hiện</p>
-                <p className="text-lg font-semibold">{activeTasks}</p>
+            
+            <div className="group glass-card rounded-xl p-4 hover-lift cursor-default">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Đang thực hiện</p>
+                  <p className="text-2xl font-bold mt-1 text-blue-600 dark:text-blue-400">{activeTasks}</p>
+                </div>
+                <div className="p-2.5 rounded-full bg-blue-100 dark:bg-blue-900/50 group-hover:scale-110 transition-transform">
+                  <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
               </div>
-              <Clock className="h-5 w-5 text-blue-500" />
             </div>
-            <div className="flex items-center justify-between rounded-lg border bg-card px-3 py-2">
-              <div>
-                <p className="text-xs text-muted-foreground">Đã hoàn thành</p>
-                <p className="text-lg font-semibold">{completedTasks}</p>
+            
+            <div className="group glass-card rounded-xl p-4 hover-lift cursor-default">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Hoàn thành</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{completedTasks}</p>
+                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                      {completionRate}%
+                    </span>
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
               </div>
-              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
             </div>
-            <div className="flex items-center justify-between rounded-lg border bg-card px-3 py-2">
-              <div>
-                <p className="text-xs text-muted-foreground">Quá hạn</p>
-                <p className="text-lg font-semibold">{overdueTasks}</p>
+            
+            <div className="group glass-card rounded-xl p-4 hover-lift cursor-default">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Quá hạn</p>
+                  <p className="text-2xl font-bold mt-1 text-red-600 dark:text-red-400">{overdueTasks}</p>
+                </div>
+                <div className={`p-2.5 rounded-full ${overdueTasks > 0 ? 'bg-red-100 dark:bg-red-900/50 animate-pulse-soft' : 'bg-slate-100 dark:bg-slate-800'} group-hover:scale-110 transition-transform`}>
+                  <AlertTriangle className={`h-5 w-5 ${overdueTasks > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`} />
+                </div>
               </div>
-              <AlertTriangle className="h-5 w-5 text-red-500" />
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
+          {/* Filter section */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between animate-slide-up">
             <div className="flex flex-wrap gap-2 items-center">
-              <Badge
-                variant={taskFilter === "all" ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => setTaskFilter("all")}
-              >
-                Tất cả
-              </Badge>
-              <Badge
-                variant={taskFilter === "today" ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => setTaskFilter("today")}
-              >
-                Hôm nay
-              </Badge>
-              <Badge
-                variant={taskFilter === "week" ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => setTaskFilter("week")}
-              >
-                Tuần này
-              </Badge>
-              <Badge
-                variant={taskFilter === "overdue" ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => setTaskFilter("overdue")}
-              >
-                Quá hạn
-              </Badge>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <ListFilter className="h-3 w-3" />
-                <span>
-                  Đang lọc:{" "}
-                  {taskFilter === "all"
-                    ? "Tất cả kế hoạch"
-                    : taskFilter === "today"
-                    ? "Kế hoạch hôm nay"
-                    : taskFilter === "week"
-                    ? "Kế hoạch trong tuần"
-                    : "Kế hoạch quá hạn"}
-                </span>
+              <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-full">
+                {[
+                  { key: "all", label: "Tất cả", count: totalTasks },
+                  { key: "today", label: "Hôm nay" },
+                  { key: "week", label: "Tuần này" },
+                  { key: "overdue", label: "Quá hạn", count: overdueTasks },
+                ].map((filter) => (
+                  <button
+                    key={filter.key}
+                    onClick={() => setTaskFilter(filter.key as "all" | "today" | "week" | "overdue")}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all ${
+                      taskFilter === filter.key
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {filter.label}
+                    {filter.count !== undefined && filter.count > 0 && (
+                      <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${
+                        taskFilter === filter.key 
+                          ? "bg-primary-foreground/20" 
+                          : "bg-muted-foreground/20"
+                      }`}>
+                        {filter.count}
+                      </span>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
 
             {completedTasks > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    Xóa kế hoạch đã hoàn thành
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Xóa {completedTasks} đã hoàn thành
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="animate-scale-in">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Xóa tất cả kế hoạch đã hoàn thành?</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -427,7 +543,9 @@ export default function TaskPlanner() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Hủy</AlertDialogCancel>
-                    <AlertDialogAction onClick={clearCompletedTasks}>Xóa</AlertDialogAction>
+                    <AlertDialogAction onClick={clearCompletedTasks} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Xóa
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -436,27 +554,28 @@ export default function TaskPlanner() {
         </div>
       </header>
 
-      <Tabs defaultValue="list" value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="list" className="gap-2">
+      {/* Tabs Section */}
+      <Tabs defaultValue="list" value={activeTab} onValueChange={setActiveTab} className="w-full animate-fade-in">
+        <TabsList className="mb-6 p-1 bg-muted/50 rounded-full w-full sm:w-auto inline-flex">
+          <TabsTrigger value="list" className="gap-2 rounded-full data-[state=active]:shadow-sm">
             <ListTodo className="h-4 w-4" />
-            Danh sách
+            <span className="hidden sm:inline">Danh sách</span>
           </TabsTrigger>
-          <TabsTrigger value="kanban" className="gap-2">
+          <TabsTrigger value="kanban" className="gap-2 rounded-full data-[state=active]:shadow-sm">
             <Kanban className="h-4 w-4" />
-            Kanban
+            <span className="hidden sm:inline">Kanban</span>
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="gap-2">
+          <TabsTrigger value="calendar" className="gap-2 rounded-full data-[state=active]:shadow-sm">
             <Calendar className="h-4 w-4" />
-            Lịch
+            <span className="hidden sm:inline">Lịch</span>
           </TabsTrigger>
-          <TabsTrigger value="grid" className="gap-2">
+          <TabsTrigger value="grid" className="gap-2 rounded-full data-[state=active]:shadow-sm">
             <LayoutGrid className="h-4 w-4" />
-            Lưới
+            <span className="hidden sm:inline">Lưới</span>
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="gap-2">
+          <TabsTrigger value="analytics" className="gap-2 rounded-full data-[state=active]:shadow-sm">
             <BarChart3 className="h-4 w-4" />
-            Thống kê
+            <span className="hidden sm:inline">Thống kê</span>
           </TabsTrigger>
         </TabsList>
 

@@ -328,22 +328,27 @@ export function TaskImportExport({ open, onOpenChange, tasks, onImport }: TaskIm
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Xuất/Nhập dữ liệu</DialogTitle>
+      <DialogContent className="sm:max-w-[600px] animate-scale-in">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
+              <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            Quản lý dữ liệu
+          </DialogTitle>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="export">
+          <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 rounded-lg">
+            <TabsTrigger value="export" className="rounded-md">
               <Download className="h-4 w-4 mr-2" />
               Xuất
             </TabsTrigger>
-            <TabsTrigger value="import">
+            <TabsTrigger value="import" className="rounded-md">
               <Upload className="h-4 w-4 mr-2" />
               Nhập
             </TabsTrigger>
-            <TabsTrigger value="backup">
+            <TabsTrigger value="backup" className="rounded-md">
               <Save className="h-4 w-4 mr-2" />
               Sao lưu
             </TabsTrigger>
@@ -351,49 +356,69 @@ export function TaskImportExport({ open, onOpenChange, tasks, onImport }: TaskIm
 
           <TabsContent value="export" className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Định dạng xuất</Label>
+              <Label className="text-sm font-medium">Định dạng xuất</Label>
               <Select value={exportFormat} onValueChange={setExportFormat}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-lg">
                   <SelectValue placeholder="Chọn định dạng" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="json">JSON</SelectItem>
-                  <SelectItem value="csv">CSV</SelectItem>
-                  <SelectItem value="text">Văn bản thuần</SelectItem>
-                  <SelectItem value="excel">Excel (TSV)</SelectItem>
+                  <SelectItem value="json">
+                    <div className="flex items-center gap-2">
+                      <FileJson className="h-4 w-4 text-amber-500" />
+                      JSON
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="csv">
+                    <div className="flex items-center gap-2">
+                      <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+                      CSV
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="text">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-blue-500" />
+                      Văn bản thuần
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="excel">
+                    <div className="flex items-center gap-2">
+                      <FileSpreadsheet className="h-4 w-4 text-green-500" />
+                      Excel (TSV)
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-6">
-              <Card>
+              <Card className="glass-card border-0">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Tổng số kế hoạch</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Tổng kế hoạch</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{tasks.length}</p>
+                  <p className="text-3xl font-bold">{tasks.length}</p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="glass-card border-0">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Kích thước dữ liệu</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Kích thước</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{Math.round(JSON.stringify(tasks).length / 1024)} KB</p>
+                  <p className="text-3xl font-bold">{Math.round(JSON.stringify(tasks).length / 1024)} <span className="text-base font-normal text-muted-foreground">KB</span></p>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Button onClick={exportData} className="w-full" disabled={tasks.length === 0}>
+            <div className="grid grid-cols-2 gap-3">
+              <Button onClick={exportData} className="w-full rounded-lg" disabled={tasks.length === 0}>
                 <Download className="mr-2 h-4 w-4" />
-                Xuất dữ liệu
+                Xuất file
               </Button>
 
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full rounded-lg"
                 onClick={() => {
                   const content = JSON.stringify(tasks, null, 2)
                   navigator.clipboard.writeText(content)

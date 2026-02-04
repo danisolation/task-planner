@@ -113,22 +113,29 @@ export function TaskKanban({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {Object.values(columns).map((column) => (
-            <div key={column.id} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium">{column.title}</h3>
-                <Badge variant="outline">{column.tasks.length}</Badge>
+            <div key={column.id} className="space-y-3">
+              <div className="flex items-center justify-between px-2">
+                <h3 className="font-semibold text-sm">{column.title}</h3>
+                <Badge variant="secondary" className="rounded-full px-2.5">
+                  {column.tasks.length}
+                </Badge>
               </div>
 
               <Droppable droppableId={column.id}>
-                {(provided) => (
+                {(provided, snapshot) => (
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="min-h-[500px] p-2 bg-muted/50 rounded-lg"
+                    className={cn(
+                      "min-h-[500px] p-2 rounded-xl transition-all duration-200 custom-scrollbar overflow-y-auto",
+                      snapshot.isDraggingOver 
+                        ? "bg-primary/5 ring-2 ring-primary/20 ring-dashed"
+                        : "bg-muted/30"
+                    )}
                   >
                     {column.tasks.map((task, index) => (
                       <Draggable key={task.id} draggableId={task.id} index={index}>
@@ -138,11 +145,16 @@ export function TaskKanban({
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             className={cn(
-                              "mb-2 shadow-sm",
-                              snapshot.isDragging && "opacity-70",
-                              task.status === "completed" && "bg-slate-50 dark:bg-slate-900/30",
-                              task.status === "overdue" && "bg-red-50 dark:bg-red-900/10",
+                              "mb-2 shadow-sm transition-all duration-200 border-transparent",
+                              snapshot.isDragging && "shadow-lg scale-105 rotate-1 ring-2 ring-primary/30",
+                              !snapshot.isDragging && "hover:shadow-md hover:-translate-y-0.5",
+                              task.status === "completed" && "bg-slate-50/80 dark:bg-slate-900/50",
+                              task.status === "overdue" && "bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-800/50",
                             )}
+                            style={{
+                              ...provided.draggableProps.style,
+                              animationDelay: `${index * 50}ms`,
+                            }}
                           >
                             <CardHeader className="p-3 pb-0">
                               <div className="flex items-start justify-between">
@@ -234,8 +246,9 @@ export function TaskKanban({
                     {provided.placeholder}
 
                     {column.tasks.length === 0 && (
-                      <div className="flex items-center justify-center h-20 border border-dashed rounded-md text-muted-foreground text-sm">
-                        Không có kế hoạch
+                      <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-xl text-muted-foreground text-sm p-4 transition-all">
+                        <Circle className="h-8 w-8 mb-2 opacity-30" />
+                        <span className="text-center">Kéo thả kế hoạch vào đây</span>
                       </div>
                     )}
                   </div>

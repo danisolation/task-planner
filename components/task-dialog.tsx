@@ -382,22 +382,36 @@ export function TaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {task ? "Chỉnh sửa kế hoạch" : "Thêm kế hoạch mới"}
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto custom-scrollbar animate-scale-in">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+            {task ? (
+              <>
+                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                  <Layers className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                Chỉnh sửa kế hoạch
+              </>
+            ) : (
+              <>
+                <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/50">
+                  <Plus className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                Thêm kế hoạch mới
+              </>
+            )}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-muted-foreground">
             {task
               ? "Chỉnh sửa thông tin kế hoạch của bạn"
-              : "Thêm kế hoạch mới vào danh sách của bạn"}
+              : "Điền thông tin để tạo kế hoạch mới"}
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-4 p-1 bg-muted/50 rounded-lg">
                 <TabsTrigger value="general">Thông tin chung</TabsTrigger>
                 <TabsTrigger value="schedule">Lịch trình</TabsTrigger>
                 <TabsTrigger value="subtasks">

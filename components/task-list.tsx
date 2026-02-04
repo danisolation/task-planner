@@ -19,6 +19,7 @@ import {
   Layers,
   CalendarIcon,
   AlertTriangle,
+  ListTodo,
 } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -174,14 +175,22 @@ export function TaskList({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-2 justify-between">
-        <div className="relative max-w-sm">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between">
+        <div className="relative max-w-sm group">
           <Input
             placeholder="Tìm kiếm kế hoạch..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pr-10"
+            className="pr-10 pl-4 h-10 rounded-full border-muted-foreground/20 bg-background/50 backdrop-blur-sm focus:bg-background transition-all"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ×
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -191,10 +200,11 @@ export function TaskList({
             onClick={() =>
               setSubtaskView(subtaskView === "compact" ? "detailed" : "compact")
             }
+            className="rounded-full text-xs"
           >
             {subtaskView === "compact"
               ? "Hiển thị chi tiết"
-              : "Hiển thị thu gọn"}
+              : "Thu gọn"}
           </Button>
 
           {allTags.length > 0 && (
@@ -222,13 +232,26 @@ export function TaskList({
       </div>
 
       {sortedTasks.length === 0 ? (
-        <div className="text-center py-10 text-slate-500 dark:text-slate-400">
-          {searchTerm || tagFilter
-            ? "Không tìm thấy kế hoạch nào phù hợp"
-            : "Chưa có kế hoạch nào. Hãy thêm kế hoạch mới!"}
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
+            <div className="relative p-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-full">
+              <ListTodo className="h-12 w-12 text-slate-400 dark:text-slate-500" />
+            </div>
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            {searchTerm || tagFilter
+              ? "Không tìm thấy kế hoạch nào"
+              : "Chưa có kế hoạch nào"}
+          </h3>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            {searchTerm || tagFilter
+              ? "Thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc"
+              : "Bắt đầu bằng cách thêm kế hoạch mới. Nhấn Ctrl+N để thêm nhanh!"}
+          </p>
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="border rounded-xl overflow-hidden bg-card/50 backdrop-blur-sm animate-fade-in">
           <Table>
             <TableHeader>
               <TableRow>
@@ -242,16 +265,18 @@ export function TaskList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedTasks.map((task) => (
+                {sortedTasks.map((task, index) => (
                 <>
                   <TableRow
                     key={task.id}
                     className={cn(
+                      "transition-all duration-200 hover:bg-muted/50 animate-fade-in",
                       task.status === "completed" &&
-                        "bg-slate-50 dark:bg-slate-900/30",
+                        "bg-slate-50/50 dark:bg-slate-900/30",
                       task.status === "overdue" &&
-                        "bg-red-50 dark:bg-red-900/10"
+                        "bg-red-50/50 dark:bg-red-900/10"
                     )}
+                    style={{ animationDelay: `${index * 30}ms` }}
                   >
                     <TableCell>
                       <Button

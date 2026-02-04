@@ -102,35 +102,61 @@ export function TaskGrid({ tasks, onEdit, onDelete, onStatusChange, onDuplicate,
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-2 justify-between">
-        <Input
-          placeholder="Tìm kiếm kế hoạch..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+      <div className="flex flex-col sm:flex-row gap-3 justify-between">
+        <div className="relative max-w-sm group">
+          <Input
+            placeholder="Tìm kiếm kế hoạch..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pr-10 pl-4 h-10 rounded-full border-muted-foreground/20 bg-background/50 backdrop-blur-sm focus:bg-background transition-all"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ×
+            </button>
+          )}
+        </div>
 
-        <div className="flex gap-1">
-          <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>
+        <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-full">
+          <button
+            onClick={() => setFilter("all")}
+            className={cn(
+              "px-3 py-1.5 text-sm font-medium rounded-full transition-all",
+              filter === "all" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
             Tất cả
-          </Button>
-          <Button
-            variant={filter === "incomplete" ? "default" : "outline"}
-            size="sm"
+          </button>
+          <button
             onClick={() => setFilter("incomplete")}
+            className={cn(
+              "px-3 py-1.5 text-sm font-medium rounded-full transition-all",
+              filter === "incomplete" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
           >
-            Chưa hoàn thành
-          </Button>
-          <Button
-            variant={filter === "completed" ? "default" : "outline"}
-            size="sm"
+            Chưa xong
+          </button>
+          <button
             onClick={() => setFilter("completed")}
+            className={cn(
+              "px-3 py-1.5 text-sm font-medium rounded-full transition-all",
+              filter === "completed" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
           >
-            Đã hoàn thành
-          </Button>
-          <Button variant={filter === "overdue" ? "default" : "outline"} size="sm" onClick={() => setFilter("overdue")}>
+            Hoàn thành
+          </button>
+          <button
+            onClick={() => setFilter("overdue")}
+            className={cn(
+              "px-3 py-1.5 text-sm font-medium rounded-full transition-all",
+              filter === "overdue" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
             Quá hạn
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -157,20 +183,35 @@ export function TaskGrid({ tasks, onEdit, onDelete, onStatusChange, onDuplicate,
       )}
 
       {sortedTasks.length === 0 ? (
-        <div className="text-center py-10 text-slate-500 dark:text-slate-400">
-          {searchTerm || filter !== "all" || tagFilter
-            ? "Không tìm thấy kế hoạch nào phù hợp"
-            : "Chưa có kế hoạch nào. Hãy thêm kế hoạch mới!"}
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
+            <div className="relative p-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-full">
+              <Circle className="h-12 w-12 text-slate-400 dark:text-slate-500" />
+            </div>
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            {searchTerm || filter !== "all" || tagFilter
+              ? "Không tìm thấy kế hoạch nào"
+              : "Chưa có kế hoạch nào"}
+          </h3>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            {searchTerm || filter !== "all" || tagFilter
+              ? "Thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc"
+              : "Bắt đầu bằng cách thêm kế hoạch mới. Nhấn Ctrl+N để thêm nhanh!"}
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedTasks.map((task) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
+          {sortedTasks.map((task, index) => (
             <Card
               key={task.id}
               className={cn(
-                task.status === "completed" && "bg-slate-50 dark:bg-slate-900/30",
-                task.status === "overdue" && "bg-red-50 dark:bg-red-900/10",
+                "transition-all duration-200 hover-lift animate-slide-up",
+                task.status === "completed" && "bg-slate-50/80 dark:bg-slate-900/30 opacity-75",
+                task.status === "overdue" && "bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-800/50",
               )}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
                 <CardTitle

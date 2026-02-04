@@ -251,11 +251,19 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-2 justify-between">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header with filters */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold">Thống kê công việc</h2>
+          <p className="text-sm text-muted-foreground">
+            Phân tích hiệu suất và tiến độ công việc của bạn
+          </p>
+        </div>
+        
         <div className="flex items-center gap-2">
           <Select value={dateRange} onValueChange={(value: "all" | "week" | "month" | "custom") => setDateRange(value)}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[160px] rounded-full">
               <SelectValue placeholder="Chọn khoảng thời gian" />
             </SelectTrigger>
             <SelectContent>
@@ -272,7 +280,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-[180px] justify-start text-left font-normal"
+                    className="w-[140px] justify-start text-left font-normal rounded-full"
                     onClick={() => setShowCalendar("start")}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -294,7 +302,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                 </PopoverContent>
               </Popover>
 
-              <span>đến</span>
+              <span className="text-muted-foreground">→</span>
 
               <Popover open={showCalendar === "end"} onOpenChange={(open) => !open && setShowCalendar(null)}>
                 <PopoverTrigger asChild>
@@ -327,7 +335,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
 
         <div className="flex items-center gap-2">
           <Select value={chartType} onValueChange={(value: any) => setChartType(value)}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[160px] rounded-full">
               <SelectValue placeholder="Chọn loại biểu đồ" />
             </SelectTrigger>
             <SelectContent>
@@ -339,71 +347,89 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="icon" onClick={exportAnalytics} title="Xuất dữ liệu thống kê">
+          <Button variant="outline" size="icon" onClick={exportAnalytics} title="Xuất dữ liệu thống kê" className="rounded-full">
             <Download className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+      {/* Stats cards with improved design */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="glass-card border-0 animate-slide-up" style={{ animationDelay: "0ms" }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tổng số kế hoạch</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Tổng kế hoạch</CardTitle>
+            <div className="p-2 rounded-full bg-slate-100 dark:bg-slate-800">
+              <BarChart3 className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalTasks}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold">{totalTasks}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               {dateRange === "all"
                 ? "Tất cả thời gian"
                 : dateRange === "week"
                   ? "Trong tuần này"
                   : dateRange === "month"
                     ? "Trong tháng này"
-                    : `Từ ${format(startDate, "dd/MM/yyyy")} đến ${format(endDate, "dd/MM/yyyy")}`}
+                    : `${format(startDate, "dd/MM")} - ${format(endDate, "dd/MM")}`}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card border-0 animate-slide-up" style={{ animationDelay: "50ms" }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Đã hoàn thành</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Hoàn thành</CardTitle>
+            <div className="p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/50">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedTasks}</div>
-            <p className="text-xs text-muted-foreground">Tỷ lệ hoàn thành: {completionRate}%</p>
+            <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{completedTasks}</div>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                  style={{ width: `${completionRate}%` }}
+                ></div>
+              </div>
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{completionRate}%</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card border-0 animate-slide-up" style={{ animationDelay: "100ms" }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Chưa hoàn thành</CardTitle>
-            <Clock className="h-4 w-4 text-slate-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Chưa xong</CardTitle>
+            <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/50">
+              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{incompleteTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              {Math.round((incompleteTasks / totalTasks) * 100) || 0}% tổng số kế hoạch
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{incompleteTasks}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {Math.round((incompleteTasks / totalTasks) * 100) || 0}% tổng số
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={`glass-card border-0 animate-slide-up ${overdueTasks > 0 ? 'ring-1 ring-red-500/30' : ''}`} style={{ animationDelay: "150ms" }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Quá hạn</CardTitle>
-            <AlertCircle className="h-4 w-4 text-red-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Quá hạn</CardTitle>
+            <div className={`p-2 rounded-full ${overdueTasks > 0 ? 'bg-red-100 dark:bg-red-900/50 animate-pulse-soft' : 'bg-slate-100 dark:bg-slate-800'}`}>
+              <AlertCircle className={`h-4 w-4 ${overdueTasks > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`} />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{overdueTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              {Math.round((overdueTasks / totalTasks) * 100) || 0}% tổng số kế hoạch
+            <div className={`text-3xl font-bold ${overdueTasks > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}>{overdueTasks}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {overdueTasks > 0 ? 'Cần xử lý ngay!' : 'Tuyệt vời! Không có quá hạn'}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="col-span-4">
+      {/* Chart section */}
+      <Card className="col-span-4 animate-slide-up" style={{ animationDelay: "200ms" }}>
         <CardHeader>
           <CardTitle>Phân tích kế hoạch</CardTitle>
           <CardDescription>

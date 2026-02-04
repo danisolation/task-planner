@@ -350,22 +350,39 @@ export function PomodoroTimer({ open, onOpenChange, tasks }: PomodoroTimerProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Pomodoro Timer</DialogTitle>
+      <DialogContent className="sm:max-w-[600px] animate-scale-in">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+            <div className={`p-2 rounded-full ${
+              timerMode === "work" 
+                ? "bg-red-100 dark:bg-red-900/50" 
+                : timerMode === "shortBreak" 
+                  ? "bg-green-100 dark:bg-green-900/50" 
+                  : "bg-blue-100 dark:bg-blue-900/50"
+            }`}>
+              <Clock className={`h-5 w-5 ${
+                timerMode === "work" 
+                  ? "text-red-600 dark:text-red-400" 
+                  : timerMode === "shortBreak" 
+                    ? "text-green-600 dark:text-green-400" 
+                    : "text-blue-600 dark:text-blue-400"
+              }`} />
+            </div>
+            Pomodoro Timer
+          </DialogTitle>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="timer">
+          <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 rounded-lg">
+            <TabsTrigger value="timer" className="rounded-md">
               <Clock className="h-4 w-4 mr-2" />
               Hẹn giờ
             </TabsTrigger>
-            <TabsTrigger value="stats">
+            <TabsTrigger value="stats" className="rounded-md">
               <BarChart3 className="h-4 w-4 mr-2" />
               Thống kê
             </TabsTrigger>
-            <TabsTrigger value="settings" onClick={() => setShowSettings(true)}>
+            <TabsTrigger value="settings" onClick={() => setShowSettings(true)} className="rounded-md">
               <Settings className="h-4 w-4 mr-2" />
               Cài đặt
             </TabsTrigger>
@@ -373,49 +390,97 @@ export function PomodoroTimer({ open, onOpenChange, tasks }: PomodoroTimerProps)
 
           <TabsContent value="timer" className="space-y-4 py-4">
             <div className="flex flex-col items-center">
-              <div className="flex gap-2 mb-4">
-                <Button
-                  variant={timerMode === "work" ? "default" : "outline"}
+              <div className="flex gap-2 mb-6 p-1 bg-muted/30 rounded-full">
+                <button
                   onClick={() => {
                     setIsRunning(false)
                     setTimerMode("work")
                     setTimeLeft(settings.workDuration * 60)
                   }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    timerMode === "work" 
+                      ? "bg-red-500 text-white shadow-lg shadow-red-500/30" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
                 >
                   Làm việc
-                </Button>
-                <Button
-                  variant={timerMode === "shortBreak" ? "default" : "outline"}
+                </button>
+                <button
                   onClick={() => {
                     setIsRunning(false)
                     setTimerMode("shortBreak")
                     setTimeLeft(settings.shortBreakDuration * 60)
                   }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    timerMode === "shortBreak" 
+                      ? "bg-green-500 text-white shadow-lg shadow-green-500/30" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
                 >
                   Nghỉ ngắn
-                </Button>
-                <Button
-                  variant={timerMode === "longBreak" ? "default" : "outline"}
+                </button>
+                <button
                   onClick={() => {
                     setIsRunning(false)
                     setTimerMode("longBreak")
                     setTimeLeft(settings.longBreakDuration * 60)
                   }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    timerMode === "longBreak" 
+                      ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
                 >
                   Nghỉ dài
-                </Button>
+                </button>
               </div>
 
-              <div className="text-6xl font-bold mb-4">{formatTime(timeLeft)}</div>
+              {/* Timer display with circular progress */}
+              <div className="relative mb-6">
+                <div className={`absolute inset-0 rounded-full blur-2xl opacity-30 ${
+                  timerMode === "work" 
+                    ? "bg-red-500" 
+                    : timerMode === "shortBreak" 
+                      ? "bg-green-500" 
+                      : "bg-blue-500"
+                }`}></div>
+                <div className={`relative w-48 h-48 rounded-full flex items-center justify-center border-4 ${
+                  timerMode === "work" 
+                    ? "border-red-500/30" 
+                    : timerMode === "shortBreak" 
+                      ? "border-green-500/30" 
+                      : "border-blue-500/30"
+                }`}>
+                  <div className="text-5xl font-bold tabular-nums">
+                    {formatTime(timeLeft)}
+                  </div>
+                </div>
+              </div>
 
-              <Progress value={calculateProgress()} className="w-full h-2 mb-6" />
+              <Progress value={calculateProgress()} className={`w-full h-2 mb-6 ${
+                timerMode === "work" 
+                  ? "[&>div]:bg-red-500" 
+                  : timerMode === "shortBreak" 
+                    ? "[&>div]:bg-green-500" 
+                    : "[&>div]:bg-blue-500"
+              }`} />
 
-              <div className="flex gap-2 mb-6">
-                <Button onClick={toggleTimer} size="lg">
+              <div className="flex gap-3 mb-6">
+                <Button 
+                  onClick={toggleTimer} 
+                  size="lg" 
+                  className={`rounded-full px-8 ${
+                    timerMode === "work" 
+                      ? "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30" 
+                      : timerMode === "shortBreak" 
+                        ? "bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/30" 
+                        : "bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/30"
+                  }`}
+                >
                   {isRunning ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
                   {isRunning ? "Tạm dừng" : "Bắt đầu"}
                 </Button>
-                <Button variant="outline" onClick={skipTimer} size="lg">
+                <Button variant="outline" onClick={skipTimer} size="lg" className="rounded-full">
                   <SkipForward className="mr-2 h-4 w-4" />
                   Bỏ qua
                 </Button>
