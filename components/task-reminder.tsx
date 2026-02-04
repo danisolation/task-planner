@@ -45,8 +45,8 @@ export function TaskReminder({ open, onOpenChange, task, onSave }: TaskReminderP
       // Nếu task có cài đặt nhắc nhở, load chúng
       if (task.reminder) {
         setEnabled(true)
-        setReminderTime(task.reminder.time.toString())
-        setReminderUnit(task.reminder.unit)
+        setReminderTime(task.reminder.time?.toString() || "30")
+        setReminderUnit(task.reminder.unit || "minutes")
         setRepeat(task.reminder.repeat || "none")
         setRepeatInterval(task.reminder.repeatInterval?.toString() || "5")
         setNotificationType(task.reminder.notificationType || "both")

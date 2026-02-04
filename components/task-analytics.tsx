@@ -1,27 +1,18 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
-import type { Task, ChartData } from "@/lib/types"
-import { CheckCircle2, Clock, AlertCircle, CalendarIcon, BarChart3, Download } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Chart,
-  ChartContainer,
-  ChartLegend,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartPie,
-  ChartLine,
-  ChartGrid,
-  ChartXAxis,
-  ChartYAxis,
-  ChartArea,
+  ChartContainer
 } from "@/components/ui/chart"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type { ChartData, Task } from "@/lib/types"
+import { endOfMonth, endOfWeek, format, isWithinInterval, startOfMonth, startOfWeek, subDays } from "date-fns"
+import { AlertCircle, BarChart3, CalendarIcon, CheckCircle2, Clock, Download } from "lucide-react"
+import { useState } from "react"
 
 interface TaskAnalyticsProps {
   tasks: Task[]
@@ -202,14 +193,14 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
             label: "Tổng số",
             data: dates.map((date) => dateMap[date].total),
             borderColor: "#3b82f6",
-            backgroundColor: "rgba(59, 130, 246, 0.1)",
+            backgroundColor: ["rgba(59, 130, 246, 0.1)"],
             fill: true,
           },
           {
             label: "Hoàn thành",
             data: dates.map((date) => dateMap[date].completed),
             borderColor: "#22c55e",
-            backgroundColor: "rgba(34, 197, 94, 0.1)",
+            backgroundColor: ["rgba(34, 197, 94, 0.1)"],
             fill: true,
           },
         ],
@@ -457,18 +448,12 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                   options={{
                     plugins: {
                       legend: {
-                        position: "right",
+                        position: "right" as const,
                       },
                     },
                     maintainAspectRatio: false,
                   }}
-                >
-                  <ChartPie />
-                  <ChartLegend position="right" />
-                  <ChartTooltip>
-                    <ChartTooltipContent />
-                  </ChartTooltip>
-                </Chart>
+                />
               )}
 
               {chartType === "timeline" && (
@@ -486,17 +471,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                     },
                     maintainAspectRatio: false,
                   }}
-                >
-                  <ChartLine />
-                  <ChartArea />
-                  <ChartXAxis />
-                  <ChartYAxis />
-                  <ChartGrid />
-                  <ChartLegend />
-                  <ChartTooltip>
-                    <ChartTooltipContent />
-                  </ChartTooltip>
-                </Chart>
+                />
               )}
             </ChartContainer>
           )}

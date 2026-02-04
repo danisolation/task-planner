@@ -1,29 +1,22 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Clock, Play, Pause, SkipForward, Settings, BarChart3, Volume2, VolumeX } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import type { Task, PomodoroSettings, PomodoroStats, ChartData } from "@/lib/types"
 import {
   Chart,
-  ChartContainer,
-  ChartLegend,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartBar,
-  ChartGrid,
-  ChartXAxis,
-  ChartYAxis,
+  ChartContainer
 } from "@/components/ui/chart"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Progress } from "@/components/ui/progress"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type { ChartData, PomodoroSettings, PomodoroStats, Task } from "@/lib/types"
+import { BarChart3, Clock, Pause, Play, Settings, SkipForward, Volume2, VolumeX } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 
 interface PomodoroTimerProps {
   open: boolean
@@ -318,12 +311,12 @@ export function PomodoroTimer({ open, onOpenChange, tasks }: PomodoroTimerProps)
         {
           label: "Số Pomodoro",
           data: recentStats.map((stat) => stat.pomodoros),
-          backgroundColor: "#ef4444",
+          backgroundColor: ["#ef4444"],
         },
         {
           label: "Giờ làm việc",
           data: recentStats.map((stat) => Math.round((stat.workTime / 60) * 10) / 10),
-          backgroundColor: "#3b82f6",
+          backgroundColor: ["#3b82f6"],
         },
       ],
     }
@@ -556,16 +549,7 @@ export function PomodoroTimer({ open, onOpenChange, tasks }: PomodoroTimerProps)
                         },
                         maintainAspectRatio: false,
                       }}
-                    >
-                      <ChartBar />
-                      <ChartXAxis />
-                      <ChartYAxis />
-                      <ChartGrid />
-                      <ChartLegend />
-                      <ChartTooltip>
-                        <ChartTooltipContent />
-                      </ChartTooltip>
-                    </Chart>
+                    />
                   </ChartContainer>
                 )}
               </CardContent>
@@ -749,9 +733,8 @@ export function PomodoroTimer({ open, onOpenChange, tasks }: PomodoroTimerProps)
                   <Select
                     value={settings.sound}
                     onValueChange={(value) => setSettings({ ...settings, sound: value })}
-                    className="flex-1"
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Chọn âm thanh" />
                     </SelectTrigger>
                     <SelectContent>

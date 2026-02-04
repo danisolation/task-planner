@@ -1,29 +1,29 @@
 "use client"
 
-import { useState } from "react"
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
-import {
-  CheckCircle2,
-  Circle,
-  AlertCircle,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Copy,
-  Bell,
-  Share2,
-  Clock,
-  Layers,
-} from "lucide-react"
-import type { Task } from "@/lib/types"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Progress } from "@/components/ui/progress"
+import type { Task } from "@/lib/types"
+import { cn } from "@/lib/utils"
+import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
-import { Progress } from "@/components/ui/progress"
-import { cn } from "@/lib/utils"
+import {
+  AlertCircle,
+  Bell,
+  CheckCircle2,
+  Circle,
+  Clock,
+  Copy,
+  Edit,
+  Layers,
+  MoreVertical,
+  Share2,
+  Trash2,
+} from "lucide-react"
+import { useState } from "react"
 
 interface TaskKanbanProps {
   tasks: Task[]
@@ -74,7 +74,7 @@ export function TaskKanban({
   }
 
   // Xử lý kéo thả
-  const onDragEnd = (result) => {
+  const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result
 
     // Nếu không có điểm đến hoặc điểm đến giống điểm đi, không làm gì cả
